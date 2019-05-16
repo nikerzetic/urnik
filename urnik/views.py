@@ -8,7 +8,7 @@ from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
 
 from urnik.iskanik_konfliktov import ProsteUcilnice, IskalnikKonfliktov
-from urnik.utils import teden_dneva
+from urnik.utils import teden_dneva, teden_int_v_datetime
 from .models import *
 
 
@@ -91,6 +91,8 @@ def rezervacije(request):
 @login_required
 def nova_rezervacija(request, ucilnica_id=None, ura=None, teden=None, dan_v_tednu=None):
     if request.method == 'POST':
+        import pdb
+        pdb.set_trace()
         form = RezevacijeForm(request.POST, dovoli_prekrivanja=True)
         if form.is_valid():
             rezervacija = form.save(commit=False)
@@ -167,8 +169,10 @@ def potrdi_vse_rezervacije(request):
     return redirect(request.POST.get('redirect') or reverse('preglej_rezervacije'))
 
 
-def urnik(request, srecanja, naslov, barve=None):
+def urnik(request, srecanja, naslov, barve=None, teden=None):
     legenda = barve
+    if teden is not None:
+        teden = teden_int_v_datetime(teden)
     if barve is None:
         barve = Predmet.objects.filter(srecanja__in=srecanja).distinct()
     if request.user.is_staff and request.session.get('urejanje', False):
@@ -184,6 +188,7 @@ def urnik(request, srecanja, naslov, barve=None):
             'prekrivanja_po_tipih': izbrani_semester(request).srecanja.prekrivanja(),
             'next': next_url,
             'barve': barve,
+            'teden': teden,
         })
     else:
         return render(request, 'urnik.html', {
@@ -191,19 +196,21 @@ def urnik(request, srecanja, naslov, barve=None):
             'naslov': naslov,
             'srecanja': srecanja.urnik(barve=barve),
             'barve': legenda,
+            'teden': teden,
         })
 
 
-def urnik_osebe(request, oseba_id):
+def urnik_osebe(request, oseba_id, teden=None):
     oseba = get_object_or_404(Oseba, id=oseba_id)
     naslov = str(oseba)
-    return urnik(request, oseba.vsa_srecanja(izbrani_semester(request)), naslov)
+    print('Teden:', teden)
+    return urnik(request, oseba.vsa_srecanja(izbrani_semester(request)), naslov, teden=teden)
 
 
-def urnik_letnika(request, letnik_id):
+def urnik_letnika(request, letnik_id, teden=None):
     letnik = get_object_or_404(Letnik, id=letnik_id)
     naslov = str(letnik)
-    return urnik(request, letnik.srecanja(izbrani_semester(request)).all(), naslov)
+    return urnik(request, letnik.srecanja(izbrani_semester(request)).all(), naslov, teden=teden)
 
 
 def urnik_ucilnice(request, ucilnica_id):

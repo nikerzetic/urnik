@@ -8,7 +8,7 @@
   <link href="//fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Urnik FMF{% if naslov %} –  {{ naslov }}{% endif %} – {{ izbrani_semester.ime }}</title>
+  <title>Urnik FMF{% if naslov %} –   {{ naslov }}{% endif %} – {{ izbrani_semester.ime }}</title>
   <link rel="stylesheet" href="{% static 'stil.css' %}">
   <link rel="stylesheet" href="{% static 'print.css' %}" media="print">
   <!-- favicons -->
@@ -29,6 +29,9 @@
       <a href="#!" class="brand-logo center" id="urnik-logo"> <!-- top centred logo: absolute -->
         <i class="large material-icons hide-on-med-and-down">schedule</i>
         {{ naslov|default:izbrani_semester.ime }}
+        {% if teden is not None %}
+        {{ teden.0|date:"j. F Y" }} – {{ teden.1|date:"j. F Y" }}
+        {% endif %}
       </a>
 
       <!-- left menu -->
