@@ -9,7 +9,7 @@ from django.forms import ModelForm, CheckboxSelectMultiple, TextInput, DateInput
 from django.template import defaultfilters
 
 from urnik.templatetags.tags import dan_tozilnik_mnozina
-from urnik.utils import teden_dneva
+from urnik.utils import teden_dneva, teden_int_v_datetime
 from .layout import nastavi_sirine_srecanj, nastavi_barve
 
 MIN_URA, MAX_URA = 7, 20
@@ -59,6 +59,12 @@ class Oseba(models.Model):
 
     def vsa_srecanja(self, semester):
         return (self.srecanja.filter(semester=semester) | semester.srecanja.filter(predmet__slusatelji=self)).distinct()
+
+    def tedenske_rezervacije(self, teden):
+        zacetek, konec = teden_int_v_datetime(teden)
+        return (Rezervacija.objects.filter(dan__lt=konec, dan_konca__gt=zacetek)
+                | Rezervacija.objects.filter(dan__lt=konec, dan__gt=zacetek, dan_konca__isnull=True)
+                ).distinct()
 
 
 class Letnik(models.Model):
