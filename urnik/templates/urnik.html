@@ -10,6 +10,9 @@
       {% for srecanje in srecanja %}
         {% include '_srecanje.html' with nacin='ogled' %}
       {% endfor %}
+      {% for rezervacija in rezervacije %}
+        {% include '_rezervacija.html' %}
+      {% endfor %}
     </div>
   </div>
   {% if barve %}

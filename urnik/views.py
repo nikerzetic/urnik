@@ -169,7 +169,7 @@ def potrdi_vse_rezervacije(request):
     return redirect(request.POST.get('redirect') or reverse('preglej_rezervacije'))
 
 
-def urnik(request, srecanja, naslov, barve=None, teden=None):
+def urnik(request, srecanja, naslov, barve=None, teden=None, rezervacije=None):
     legenda = barve
     if teden is not None:
         teden = teden_int_v_datetime(teden)
@@ -189,6 +189,7 @@ def urnik(request, srecanja, naslov, barve=None, teden=None):
             'next': next_url,
             'barve': barve,
             'teden': teden,
+            'rezervacije': rezervacije,
         })
     else:
         return render(request, 'urnik.html', {
@@ -197,14 +198,17 @@ def urnik(request, srecanja, naslov, barve=None, teden=None):
             'srecanja': srecanja.urnik(barve=barve),
             'barve': legenda,
             'teden': teden,
+            'rezervacije': rezervacije,
         })
 
 
 def urnik_osebe(request, oseba_id, teden=None):
     oseba = get_object_or_404(Oseba, id=oseba_id)
     naslov = str(oseba)
-    print('Teden:', teden)
-    return urnik(request, oseba.vsa_srecanja(izbrani_semester(request)), naslov, teden=teden)
+    rezervacije = None
+    if teden is not None:
+        rezervacije = oseba.tedenske_rezervacije(teden) 
+    return urnik(request, oseba.vsa_srecanja(izbrani_semester(request)), naslov, teden=teden, rezervacije=rezervacije)
 
 
 def urnik_letnika(request, letnik_id, teden=None):
