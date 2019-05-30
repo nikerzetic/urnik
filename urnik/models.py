@@ -292,6 +292,7 @@ class SrecanjeQuerySet(models.QuerySet):
             'predmet__letniki', 'ucitelji', 'predmet__slusatelji'
         )
         nastavi_sirine_srecanj(self)
+
         nastavi_barve(self, barve)
         return self
 
@@ -459,6 +460,8 @@ class Srecanje(models.Model):
         ).distinct()
 
     def style(self):
+        # import pdb
+        # pdb.set_trace()
         if self.dan and self.ura and hasattr(self, 'sirina'):
             left = (self.dan - 1 + self.zamik) * ENOTA_SIRINE
             top = (self.ura - MIN_URA) * ENOTA_VISINE
@@ -581,6 +584,27 @@ class Rezervacija(models.Model):
 
     def se_po_urah_prekriva(self, od, do):
         return self.od < do and od < self.do
+
+    def style(self):
+        # import pdb
+        # pdb.set_trace()
+        self.sirina = 1.0  # TODO To je nezdravo. Potrebna metoda za racunanje sirine v layout nastavi_sirine_srecanj
+        self.zamik = 0.0 # isto kot zgoraj
+        if self.dan and self.od and hasattr(self, 'sirina'):
+            left = (self.dan.weekday() - 1 + self.zamik) * ENOTA_SIRINE
+            top = (self.od - MIN_URA) * ENOTA_VISINE
+            height = (self.do - self.od) * ENOTA_VISINE
+            width = self.sirina * ENOTA_SIRINE
+            return 'left: {:.2%}; width: {:.2%}; top: {:.2%}; height: {:.2%};'.format(
+                left, width, top, height)
+        else:
+            return ''
+
+    def css_classes(self):
+        classes = []
+        if hasattr(self, 'leftmost') and self.leftmost: classes.append('leftmost')
+        if hasattr(self, 'rightmost') and self.rightmost: classes.append('rightmost')
+        return ' '.join(classes)
 
 
 class RezervacijeModelMultipleChoiceField(ModelMultipleChoiceField):
